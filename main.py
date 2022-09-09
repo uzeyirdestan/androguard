@@ -25,7 +25,7 @@ def androaxml_main(inp, outp=None, resource=None):
         a = apk.APK(inp)
         if resource:
             if resource not in a.files:
-                logger.error("The APK does not contain a file called '{}'".format(resource), file=sys.stderr)
+                ##logger.error("The APK does not contain a file called '{}'".format(resource), file=sys.stderr)
                 sys.exit(1)
 
             axml = AXMLPrinter(a.get_file(resource)).get_xml_obj()
@@ -34,7 +34,7 @@ def androaxml_main(inp, outp=None, resource=None):
     elif ".xml" in inp:
         axml = AXMLPrinter(readFile(inp)).get_xml_obj()
     else:
-        logger.error("Unknown file type")
+        ##logger.error("Unknown file type")
         sys.exit(1)
 
     buff = etree.tostring(axml, pretty_print=True, encoding="utf-8")
@@ -245,26 +245,26 @@ def androlyze_main(session, filename):
     colorama.init()
 
     if session:
-        logger.info("Restoring session '{}'...".format(session))
+        ##logger.info("Restoring session '{}'...".format(session))
         s = CONF['SESSION'] = Load(session)
-        logger.info("Successfully restored {}".format(s))
+        ##logger.info("Successfully restored {}".format(s))
         # TODO Restore a, d, dx etc...
     else:
         s = CONF["SESSION"] = Session(export_ipython=True)
 
     if filename:
         ("Loading apk {}...".format(os.path.basename(filename)))
-        logger.info("Please be patient, this might take a while.")
+        ##logger.info("Please be patient, this might take a while.")
 
         filetype = androconf.is_android(filename)
 
-        logger.info("Found the provided file is of type '{}'".format(filetype))
+        ##logger.info("Found the provided file is of type '{}'".format(filetype))
 
         if filetype not in ['DEX', 'DEY', 'APK']:
-            logger.error(Fore.RED + "This file type is not supported by androlyze for auto loading right now!" + Fore.RESET, file=sys.stderr)
-            logger.error("But your file is still available:")
-            logger.error(">>> filename")
-            logger.error(repr(filename))
+            ##logger.error(Fore.RED + "This file type is not supported by androlyze for auto loading right now!" + Fore.RESET, file=sys.stderr)
+            ##logger.error("But your file is still available:")
+            ##logger.error(">>> filename")
+            ##logger.error(repr(filename))
             print()
 
         else:
@@ -272,10 +272,10 @@ def androlyze_main(session, filename):
                 raw = fp.read()
 
             h = s.add(filename, raw)
-            logger.info("Added file to session: SHA256::{}".format(h))
+            ##logger.info("Added file to session: SHA256::{}".format(h))
 
             if filetype == 'APK':
-                logger.info("Loaded APK file...")
+                ##logger.info("Loaded APK file...")
                 a, d, dx = s.get_objects_apk(digest=h)
 
                 print(">>> filename")
@@ -288,7 +288,7 @@ def androlyze_main(session, filename):
                 print(dx)
                 print()
             elif filetype in ['DEX', 'DEY']:
-                logger.info("Loaded DEX file...")
+                ##logger.info("Loaded DEX file...")
                 for h_, d, dx in s.get_objects_dex():
                     if h == h_:
                         break
@@ -446,7 +446,7 @@ def androstrace_main(apk_file):
         raw = fp.read()
 
     h = s.add(apk_file, raw)
-    logger.info("Added file to session: SHA256::{}".format(h))
+    ##logger.info("Added file to session: SHA256::{}".format(h))
 
     p = Pentest()
     p.print_devices()
@@ -464,7 +464,7 @@ def androtrace_main(apk_file, list_modules, live=False):
             raw = fp.read()
 
         h = s.add(apk_file, raw)
-        logger.info("Added file to session: SHA256::{}".format(h))
+        ##logger.info("Added file to session: SHA256::{}".format(h))
 
     p = Pentest()
     p.print_devices()

@@ -231,7 +231,7 @@ def readuleb128(cm, buff):
                 if cur > 0x7f:
                     cur = get_byte(cm, buff)
                     if cur > 0x0f:
-                        logger.warning("possible error while decoding number")
+                        ###logger.warning("possible error while decoding number")
                     result |= cur << 28
 
     return result
@@ -378,7 +378,7 @@ def determineNext(i, cur_idx, m):
         # emit an extra nop instruction as a spacer if such an instruction would otherwise be unaligned."
         padding = (off + cur_idx) % 4
         if padding != 0:
-            logger.warning("Switch payload not aligned, assume stuff and add {} bytes...".format(padding))
+            ###logger.warning("Switch payload not aligned, assume stuff and add {} bytes...".format(padding))
         data = code.get_ins_off(off + cur_idx + padding)
 
         # TODO: some malware points to invalid code
@@ -388,7 +388,7 @@ def determineNext(i, cur_idx, m):
             for target in data.get_targets():
                 x.append(target * 2 + cur_idx)
         else:
-            logger.warning("Could not determine payload of switch command at offset {} inside {}! "
+            ###logger.warning("Could not determine payload of switch command at offset {} inside {}! "
                         "Possibly broken bytecode?".format(cur_idx, m))
 
         return x
@@ -467,14 +467,14 @@ class HeaderItem:
     """
 
     def __init__(self, size, buff, cm):
-        logger.debug("HeaderItem")
+        ###logger.debug("HeaderItem")
 
         self.CM = cm
 
         self.offset = buff.tell()
 
         if self.offset != 0:
-            logger.warning("Unusual DEX file, does not have the header at offset 0")
+            ###logger.warning("Unusual DEX file, does not have the header at offset 0")
 
         if buff.raw.getbuffer().nbytes < self.get_length():
             raise ValueError("Not a DEX file, Header too small.")
@@ -515,7 +515,7 @@ class HeaderItem:
         try:
             self.dex_version = int(self.magic[4:7].decode('ascii'), 10)
         except (UnicodeDecodeError, ValueError):
-            logger.warning("Wrong DEX version: {}, trying to parse anyways".format(repr(self.magic)))
+            ###logger.warning("Wrong DEX version: {}, trying to parse anyways".format(repr(self.magic)))
             self.dex_version = 35  # assume a common version...
 
         if zlib.adler32(read_at(buff, self.offset + 12)) != self.checksum:
@@ -523,7 +523,7 @@ class HeaderItem:
 
         if self.file_size != buff.raw.getbuffer().nbytes:
             # Maybe raise an error here too...
-            logger.warning("DEX file size is different to the buffer. Trying to parse anyways.")
+            ###logger.warning("DEX file size is different to the buffer. Trying to parse anyways.")
 
         if self.header_size != 0x70:
             raise ValueError("This is not a DEX file! Wrong header size: '{}'".format(self.header_size))
@@ -535,7 +535,7 @@ class HeaderItem:
             raise ValueError("DEX file contains too many ({}) PROTO_IDs to be valid!".format(self.proto_ids_size))
 
         if self.data_size % 4 != 0:
-            logger.warning("data_size is not a multiple of sizeof(uint32_t), but try to parse anyways.")
+            ###logger.warning("data_size is not a multiple of sizeof(uint32_t), but try to parse anyways.")
 
         self.map_off_obj = None
         self.string_off_obj = None
@@ -1692,7 +1692,7 @@ class EncodedValue:
             else:
                 self.value = False
         else:
-            logger.warning("Unknown value 0x%x" % self.value_type)
+            ###logger.warning("Unknown value 0x%x" % self.value_type)
 
     def get_value(self):
         """
@@ -2018,7 +2018,7 @@ class StringDataItem:
         try:
             return mutf8.decode(self.data)
         except UnicodeDecodeError:
-            logger.error("Impossible to decode {}".format(self.data))
+            ###logger.error("Impossible to decode {}".format(self.data))
             return "ANDROGUARD[INVALID_STRING] {}".format(self.data)
 
     def show(self):
@@ -6449,7 +6449,7 @@ class LinearSweepAlgorithm:
         """
         Yields all instructions for the given bytecode sequence.
         If unknown/corrupt/unused instructions are encountered,
-        the loop will stop and an error is written to the logger.
+        the loop will stop and an error is written to the ###logger.
 
         That means that the bytecode read might be corrupt
         or was crafted in this way, to break parsers.
@@ -6466,7 +6466,7 @@ class LinearSweepAlgorithm:
 
         max_idx = size * calcsize('H')
         if max_idx > len(insn):
-            logger.warning("Declared size of instructions is larger than the bytecode!")
+            ###logger.warning("Declared size of instructions is larger than the bytecode!")
             max_idx = len(insn)
 
         # Get instructions
@@ -6492,7 +6492,7 @@ class LinearSweepAlgorithm:
                     obj = get_instruction(cm, op_value & 0xff, insn[idx:])
             except InvalidInstruction as e:
                 # TODO somehow it would be nice to know that the parsing failed at the level of EncodedMethod or for the decompiler
-                logger.error("Invalid instruction encountered! Stop parsing bytecode at idx %s. Message: %s", idx, e)
+                ###logger.error("Invalid instruction encountered! Stop parsing bytecode at idx %s. Message: %s", idx, e)
                 return
             # emit instruction
             yield obj
@@ -6859,12 +6859,12 @@ class DalvikCode:
         return self.insns_size
 
     def _begin_show(self):
-        logger.debug("registers_size: %d" % self.registers_size)
-        logger.debug("ins_size: %d" % self.ins_size)
-        logger.debug("outs_size: %d" % self.outs_size)
-        logger.debug("tries_size: %d" % self.tries_size)
-        logger.debug("debug_info_off: %d" % self.debug_info_off)
-        logger.debug("insns_size: %d" % self.insns_size)
+        ###logger.debug("registers_size: %d" % self.registers_size)
+        ###logger.debug("ins_size: %d" % self.ins_size)
+        ###logger.debug("outs_size: %d" % self.outs_size)
+        ###logger.debug("tries_size: %d" % self.tries_size)
+        ###logger.debug("debug_info_off: %d" % self.debug_info_off)
+        ###logger.debug("insns_size: %d" % self.insns_size)
 
         bytecode._PrintBanner()
 
@@ -7029,7 +7029,7 @@ class MapItem:
         return self.size
 
     def parse(self):
-        logger.debug("Starting parsing map_item '{}'".format(self.type.name))
+        ###logger.debug("Starting parsing map_item '{}'".format(self.type.name))
         started_at = time.time()
 
         # Not all items are aligned in the same way. Most are aligned by four bytes,
@@ -7136,13 +7136,13 @@ class MapItem:
             pass  # It's me I think !!! No need to parse again
 
         else:
-            logger.warning("Map item with id '{type}' offset: 0x{off:x} ({off}) "
+            ###logger.warning("Map item with id '{type}' offset: 0x{off:x} ({off}) "
                         "size: {size} is unknown. "
                         "Is this a newer DEX format?".format(type=self.type, off=buff.tell(), size=self.size))
 
         diff = time.time() - started_at
         minutes, seconds = diff // 60, diff % 60
-        logger.debug("End of parsing map_item '{}'. Required time {:.0f}:{:07.4f}".format(self.type.name, minutes, seconds))
+        ###logger.debug("End of parsing map_item '{}'. Required time {:.0f}:{:07.4f}".format(self.type.name, minutes, seconds))
 
     def show(self):
         bytecode._Print("\tMAP_TYPE_ITEM", self.type.name)
@@ -7336,7 +7336,7 @@ class ClassManager:
     def get_class_data_item(self, off):
         i = self.__classdata_off.get(off)
         if i is None:
-            logger.warning("unknown class data item @ 0x%x" % off)
+            ###logger.warning("unknown class data item @ 0x%x" % off)
 
         return i
 
@@ -7392,13 +7392,13 @@ class ClassManager:
         try:
             off = self.__manage_item[TypeMapItem.STRING_ID_ITEM][idx].get_string_data_off()
         except IndexError:
-            logger.warning("unknown string item @ %d" % idx)
+            ###logger.warning("unknown string item @ %d" % idx)
             return "AG:IS: invalid string"
 
         try:
             return self.__strings_off[off].get()
         except KeyError:
-            logger.warning("unknown string item @ 0x%x(%d)" % (off, idx))
+            ###logger.warning("unknown string item @ 0x%x(%d)" % (off, idx))
             return "AG:IS: invalid string"
 
     def get_type_list(self, off):
@@ -7497,12 +7497,12 @@ class ClassManager:
                 name += "_" + bytecode.FormatDescriptorToPython(
                     encoded_method.get_descriptor())
 
-            logger.debug("try deleting old name in python...")
+            ###logger.debug("try deleting old name in python...")
             try:
                 delattr(class_def.M, name)
-                logger.debug("success with regular name")
+                ###logger.debug("success with regular name")
             except AttributeError:
-                logger.debug("WARNING: fail with regular name")
+                ###logger.debug("WARNING: fail with regular name")
                 # python_export = False
 
                 try:
@@ -7516,17 +7516,17 @@ class ClassManager:
 
                 try:
                     delattr(class_def.M, name)
-                    logger.debug("success with name containing prototype")
+                    ###logger.debug("success with name containing prototype")
                 except AttributeError:
-                    logger.debug("WARNING: fail with name containing prototype")
+                    ###logger.debug("WARNING: fail with name containing prototype")
                     python_export = False
 
             if python_export:
                 name = bytecode.FormatNameToPython(value)
                 setattr(class_def.M, name, encoded_method)
-                logger.debug("new name in python: created: %s." % name)
+                ###logger.debug("new name in python: created: %s." % name)
             else:
-                logger.debug("skipping creating new name in python")
+                ###logger.debug("skipping creating new name in python")
 
         method.reload()
 
@@ -7659,7 +7659,7 @@ class DalvikPacker:
     """
     def __init__(self, endian_tag):
         if endian_tag == 0x78563412:
-            logger.error("DEX file with byte swapped endian tag is not supported!")
+            ###logger.error("DEX file with byte swapped endian tag is not supported!")
             raise NotImplementedError("Byte swapped endian tag encountered!")
         elif endian_tag == 0x12345678:
             self.endian_tag = '<'
@@ -7697,7 +7697,7 @@ class DEX:
     """
 
     def __init__(self, buff, decompiler=None, config=None, using_api=None):
-        logger.debug("DEX {} {} {}".format(decompiler, config, using_api))
+        ###logger.debug("DEX {} {} {}".format(decompiler, config, using_api))
 
         # to allow to pass apk object ==> we do not need to pass additionally target version
         if isinstance(buff, apk.APK):
@@ -7726,7 +7726,7 @@ class DEX:
 
         if self.header.map_off == 0:
             # TODO check if the header specifies items but does not have a map
-            logger.warning("no map list! This DEX file is probably empty.")
+            ###logger.warning("no map list! This DEX file is probably empty.")
         else:
             self.map_list = MapList(self.CM, self.header.map_off, self.raw)
 
@@ -7881,9 +7881,9 @@ class DEX:
                     s[idx + length] = c_length
 
                     length += c_length
-                    # logger.debug("SAVE" + str(j) + " @ 0x%x" % (idx+length))
+                    # ###logger.debug("SAVE" + str(j) + " @ 0x%x" % (idx+length))
 
-                logger.debug("SAVE " + str(i[0]) + " @0x{:x} ({:x})".format(idx, length))
+                ###logger.debug("SAVE " + str(i[0]) + " @0x{:x} ({:x})".format(idx, length))
 
             else:
                 if isinstance(i, MapList):
@@ -7898,7 +7898,7 @@ class DEX:
 
                 s[idx] = length
 
-                logger.debug("SAVE " + str(i) + " @0x{:x} ({:x})".format(idx, length))
+                ###logger.debug("SAVE " + str(i) + " @0x{:x} ({:x})".format(idx, length))
 
             idx += length
 
@@ -7920,7 +7920,7 @@ class DEX:
             idx = h[i]
 
             if idx != last_idx:
-                logger.debug("Adjust alignment @{:x} with 00 {:x}".format(idx, idx - last_idx))
+                ###logger.debug("Adjust alignment @{:x} with 00 {:x}".format(idx, idx - last_idx))
                 buff += bytearray([0] * (idx - last_idx))
 
             buff += i.get_raw()
@@ -7928,7 +7928,7 @@ class DEX:
                 buff += b"\x00"
             last_idx = idx + s[idx]
 
-        logger.debug("GLOBAL SIZE %d" % len(buff))
+        ###logger.debug("GLOBAL SIZE %d" % len(buff))
 
         return self.fix_checksums(buff)
 
@@ -7945,8 +7945,8 @@ class DEX:
         checksum = zlib.adler32(buff[12:])
         buff = buff[:8] + self.CM.packer["I"].pack(checksum) + buff[12:]
 
-        logger.debug("NEW SIGNATURE %s" % repr(signature))
-        logger.debug("NEW CHECKSUM %x" % checksum)
+        ###logger.debug("NEW SIGNATURE %s" % repr(signature))
+        ###logger.debug("NEW CHECKSUM %x" % checksum)
 
         return buff
 
@@ -8266,7 +8266,7 @@ class DEX:
         """
         Export classes/methods/fields' names in the python namespace
         """
-        logger.debug("Exporting Python objects")
+        ###logger.debug("Exporting Python objects")
         setattr(self, "C", ExportObject())
 
         for _class in self.get_classes():

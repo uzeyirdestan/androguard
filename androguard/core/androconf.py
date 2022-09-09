@@ -174,15 +174,15 @@ def show_logging(level=logging.INFO):
     """
     enable log messages on stdout
 
-    We will catch all messages here! From all loggers...
+    We will catch all messages here! From all ###logger....
     """
-    logger = logging.getLogger()
+    ###logger.= logging.getLogger()
 
     h = logging.StreamHandler(stream=sys.stderr)
     h.setFormatter(logging.Formatter(fmt="[%(levelname)-8s] %(name)s: %(message)s"))
 
-    logger.addHandler(h)
-    logger.setLevel(level)
+    ###logger.addHandler(h)
+    ###logger.setLevel(level)
 
 
 def set_options(key, value):

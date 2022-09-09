@@ -319,7 +319,7 @@ def build_node_from_block(block, vmap, gen_ret, exception_type=None):
         try:
             _ins = INSTRUCTION_SET[opcode]
         except IndexError:
-            logger.error('Unknown instruction : %s.', ins.get_name().lower())
+            ###logger.error('Unknown instruction : %s.', ins.get_name().lower())
             _ins = INSTRUCTION_SET[0]
         # fill-array-data
         if opcode == 0x26:

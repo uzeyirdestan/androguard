@@ -45,7 +45,7 @@ from androguard.decompiler.dad.instruction import Param, ThisParam
 from androguard.decompiler.dad.writer import Writer
 from androguard.util import readFile
 
-logger.add(sys.stderr, format="{time} {level} {message}", filter="dad", level="INFO")
+###logger.add(sys.stderr, format="{time} {level} {message}", filter="dad", level="INFO")
 
 # No seperate DvField class currently
 def get_field_ast(field):
@@ -100,7 +100,7 @@ class DvMethod:
 
         code = method.get_code()
         if code is None:
-            logger.debug('No code : %s %s', self.name, self.cls_name)
+            ###logger.debug('No code : %s %s', self.name, self.cls_name)
         else:
             start = code.registers_size - code.ins_size
             if 'static' not in self.access:
@@ -133,11 +133,11 @@ class DvMethod:
 
         :param doAST: generate AST instead of Java Code
         """
-        logger.debug('METHOD : %s', self.name)
+        ###logger.debug('METHOD : %s', self.name)
 
         # Native methods... no blocks.
         if self.start_block is None:
-            logger.debug('Native Method.')
+            ###logger.debug('Native Method.')
             if doAST:
                 self.ast = JSONWriter(None, self).get_ast()
             else:
@@ -271,11 +271,11 @@ class DvClass:
         self.superclass = dvclass.get_superclassname()
         self.thisclass = dvclass.get_name()
 
-        logger.debug('Class : %s', self.name)
-        logger.debug('Methods added :')
+        ###logger.debug('Class : %s', self.name)
+        ###logger.debug('Methods added :')
         for meth in self.methods:
-            logger.debug('%s (%s, %s)', meth.get_method_idx(), self.name, meth.name)
-        logger.debug('')
+            ###logger.debug('%s (%s, %s)', meth.get_method_idx(), self.name, meth.name)
+        ###logger.debug('')
 
     def get_methods(self):
         return self.methods
@@ -294,7 +294,7 @@ class DvClass:
                 self.process_method(i, doAST=doAST)
             except Exception as e:
                 # FIXME: too broad exception?
-                logger.warning('Error decompiling method %s: %s', self.methods[i], e)
+                ###logger.warning('Error decompiling method %s: %s', self.methods[i], e)
 
     def get_ast(self):
         fields = [get_field_ast(f) for f in self.fields]
@@ -510,7 +510,7 @@ class DvMachine:
         This calls :meth:`~androgaurd.decompiler.dad.decompile.DvClass.process` on each :class:`DvClass`.
         """
         for name, klass in self.classes.items():
-            logger.debug('Processing class: %s', name)
+            ###logger.debug('Processing class: %s', name)
             if isinstance(klass, DvClass):
                 klass.process()
             else:
@@ -532,7 +532,7 @@ class DvMachine:
         Run :meth:`process` and :meth:`show_source` after each other.
         """
         for name, klass in sorted(self.classes.items()):
-            logger.debug('Processing class: %s', name)
+            ###logger.debug('Processing class: %s', name)
             if not isinstance(klass, DvClass):
                 klass = DvClass(klass, self.vma)
             klass.process()
@@ -548,7 +548,7 @@ class DvMachine:
         """
         ret = dict()
         for name, cls in sorted(self.classes.items()):
-            logger.debug('Processing class: %s', name)
+            ###logger.debug('Processing class: %s', name)
             if not isinstance(cls, DvClass):
                 cls = DvClass(cls, self.vma)
             cls.process(doAST=True)
@@ -560,12 +560,12 @@ sys.setrecursionlimit(5000)
 
 
 def main():
-    # logger.setLevel(logging.DEBUG) for debugging output
+    # ###logger.setLevel(logging.DEBUG) for debugging output
     # comment the line to disable the logging.
-    logger.setLevel(logging.INFO)
+    ###logger.setLevel(logging.INFO)
     console_hdlr = logging.StreamHandler(sys.stdout)
     console_hdlr.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-    logger.addHandler(console_hdlr)
+    ###logger.addHandler(console_hdlr)
 
     default_file = 'examples/android/TestsAndroguard/bin/TestActivity.apk'
     if len(sys.argv) > 1:
@@ -573,11 +573,11 @@ def main():
     else:
         machine = DvMachine(default_file)
 
-    logger.info('========================')
-    logger.info('Classes:')
+    ###logger.info('========================')
+    ###logger.info('Classes:')
     for class_name in sorted(machine.get_classes()):
-        logger.info(' %s', class_name)
-    logger.info('========================')
+        ###logger.info(' %s', class_name)
+    ###logger.info('========================')
 
     cls_name = input('Choose a class (* for all classes): ')
     if cls_name == '*':
@@ -585,20 +585,20 @@ def main():
     else:
         cls = machine.get_class(cls_name)
         if cls is None:
-            logger.error('%s not found.', cls_name)
+            ###logger.error('%s not found.', cls_name)
         else:
-            logger.info('======================')
+            ###logger.info('======================')
             for i, method in enumerate(cls.get_methods()):
-                logger.info('%d: %s', i, method.name)
-            logger.info('======================')
+                ###logger.info('%d: %s', i, method.name)
+            ###logger.info('======================')
             meth = input('Method (* for all methods): ')
             if meth == '*':
-                logger.info('CLASS = %s', cls)
+                ###logger.info('CLASS = %s', cls)
                 cls.process()
             else:
                 cls.process_method(int(meth))
-            logger.info('Source:')
-            logger.info('===========================')
+            ###logger.info('Source:')
+            ###logger.info('===========================')
             cls.show_source()
 
 
