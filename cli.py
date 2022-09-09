@@ -36,7 +36,7 @@ class MyFilter:
         self.level = level
 
     def __call__(self, record):
-        levelno = ##logger.level(self.level).no
+        levelno = logger.level(self.level).no
         return record["level"].no >= levelno
 
 @click.group(help=__doc__)
@@ -44,9 +44,9 @@ class MyFilter:
 @click.option("--verbose", "--debug", 'verbosity', flag_value='verbose', help="Print more")
 def entry_point(verbosity):
     if verbosity == None:
-       ##logger.remove(0)
+       logger.remove(0)
        my_filter = MyFilter("INFO")
-       ##logger.add(sys.stderr, filter=my_filter, level=0)
+       logger.add(sys.stderr, filter=my_filter, level=0)
     
 
 @entry_point.command()
@@ -167,11 +167,11 @@ def arsc(input_,
     from androguard.core import axml, apk
 
     if file_ and input_:
-        ##logger.info("Can not give --input and positional argument! Please use only one of them!")
+        logger.info("Can not give --input and positional argument! Please use only one of them!")
         sys.exit(1)
 
     if not input_ and not file_:
-        ##logger.info("Give one file to decode!")
+        logger.info("Give one file to decode!")
         sys.exit(1)
 
     if input_:
@@ -184,16 +184,16 @@ def arsc(input_,
         a = apk.APK(fname)
         arscobj = a.get_android_resources()
         if not arscobj:
-            ##logger.error("The APK does not contain a resources file!")
+            logger.error("The APK does not contain a resources file!")
             sys.exit(0)
     elif ret_type == "ARSC":
         with open(fname, 'rb') as fp:
             arscobj = axml.ARSCParser(fp.read())
             if not arscobj:
-                ##logger.error("The resources file seems to be invalid!")
+                logger.error("The resources file seems to be invalid!")
                 sys.exit(1)
     else:
-        ##logger.error("Unknown file type!")
+        logger.error("Unknown file type!")
         sys.exit(1)
 
     if id_:
@@ -358,7 +358,7 @@ def apkid(apks):
     """Return the packageName/versionCode/versionName per APK as JSON."""
     from androguard.core.apk import get_apkid
 
-    ##logger.debug("APKID")
+    logger.debug("APKID")
 
     results = dict()
     for apk in apks:

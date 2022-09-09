@@ -240,7 +240,7 @@ class APK:
 
         """
         if magic_file:
-            ###logger.warning("You set magic_file but this parameter is actually unused. You should remove it.")
+            logger.warning("You set magic_file but this parameter is actually unused. You should remove it.")
 
         self.filename = filename
 
@@ -276,7 +276,7 @@ class APK:
             self.zip = zipfile.ZipFile(filename, mode="r")
 
         if testzip:
-            ###logger.info("Testing zip file integrity, this might take a while...")
+            logger.info("Testing zip file integrity, this might take a while...")
             # Test the zipfile for integrity before continuing.
             # This process might be slow, as the whole file is read.
             # Therefore it is possible to enable it as a separate feature.
@@ -310,27 +310,27 @@ class APK:
         extracted from the Manifest.
         """
         i = "AndroidManifest.xml"
-        ###logger.info("Starting analysis on {}".format(i))
+        logger.info("Starting analysis on {}".format(i))
         try:
             manifest_data = self.zip.read(i)
         except KeyError:
-            ###logger.warning("Missing AndroidManifest.xml. Is this an APK file?")
+            logger.warning("Missing AndroidManifest.xml. Is this an APK file?")
         else:
             ap = AXMLPrinter(manifest_data)
 
             if not ap.is_valid():
-                ###logger.error("Error while parsing AndroidManifest.xml - is the file valid?")
+                logger.error("Error while parsing AndroidManifest.xml - is the file valid?")
                 return
 
             self.axml[i] = ap
             self.xml[i] = self.axml[i].get_xml_obj()
 
             if self.axml[i].is_packed():
-                ###logger.warning("XML Seems to be packed, operations on the AndroidManifest.xml might fail.")
+                logger.warning("XML Seems to be packed, operations on the AndroidManifest.xml might fail.")
 
             if self.xml[i] is not None:
                 if self.xml[i].tag != "manifest":
-                    ###logger.error("AndroidManifest.xml does not start with a <manifest> tag! Is this a valid APK?")
+                    logger.error("AndroidManifest.xml does not start with a <manifest> tag! Is this a valid APK?")
                     return
 
                 self.package = self.get_attribute_value("manifest", "package")
@@ -367,7 +367,7 @@ class APK:
                     self.declared_permissions[d_perm_name] = d_perm_details
 
                 self.valid_apk = True
-                ###logger.info("APK file was successfully validated!")
+                logger.info("APK file was successfully validated!")
 
         self.permission_module = androconf.load_api_specific_resource_module(
             "aosp_permissions", self.get_target_sdk_version())
@@ -424,7 +424,7 @@ class APK:
         try:
             maxSdkVersion = int(self.get_value_from_tag(item, "maxSdkVersion"))
         except ValueError:
-            ###logger.warning(self.get_max_sdk_version() + 'is not a valid value for <uses-permission> maxSdkVersion')
+            logger.warning(self.get_max_sdk_version() + 'is not a valid value for <uses-permission> maxSdkVersion')
         except TypeError:
             pass
         return maxSdkVersion
@@ -475,7 +475,7 @@ class APK:
         if app_name is None:
             # No App name set
             # TODO return packagename instead?
-            ###logger.warning("It looks like that no app name is set for the main activity!")
+            logger.warning("It looks like that no app name is set for the main activity!")
             return ""
 
         if app_name.startswith("@"):
@@ -492,12 +492,12 @@ class APK:
                 if package == 'android':
                     # TODO: we can not resolve this, as we lack framework-res.apk
                     # one exception would be when parsing framework-res.apk directly.
-                    ###logger.warning("Resource ID with android package name encountered! "
+                    logger.warning("Resource ID with android package name encountered! "
                                 "Will not resolve, framework-res.apk would be required.")
                     return app_name
                 else:
                     # TODO should look this up, might be in the resources
-                    ###logger.warning("Resource ID with Package name '{}' encountered! Will not resolve".format(package))
+                    logger.warning("Resource ID with Package name '{}' encountered! Will not resolve".format(package))
                     return app_name
 
             try:
@@ -592,7 +592,7 @@ class APK:
                         app_icon = file_name
                         current_dpi = dpi
             except Exception as e:
-                ###logger.warning("Exception selecting app icon: %s" % e)
+                logger.warning("Exception selecting app icon: %s" % e)
 
         return app_icon
 
@@ -2227,10 +2227,10 @@ def get_apkid(apkfile):
     hex value that starts with @).
 
     """
-    ###logger.debug("GET_APKID")
+    logger.debug("GET_APKID")
 
     if not os.path.exists(apkfile):
-        ###logger.error("'{apkfile}' does not exist!".format(apkfile=apkfile))
+        logger.error("'{apkfile}' does not exist!".format(apkfile=apkfile))
 
     appid = None
     versionCode = None

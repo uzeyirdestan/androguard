@@ -342,7 +342,7 @@ class MethodAnalysis:
     :type method: a :class:`EncodedMethod` object
     """
     def __init__(self, vm, method):
-        ###logger.debug("Adding new method {} {}".format(method.get_class_name(), method.get_name()))
+        logger.debug("Adding new method {} {}".format(method.get_class_name(), method.get_name()))
 
         self.__vm = vm
         self.method = method
@@ -423,21 +423,21 @@ class MethodAnalysis:
         l = []
         h = dict()
 
-        ###logger.debug("Parsing instructions for method at @0x{:08x}".format(self.method.get_code_off()))
+        logger.debug("Parsing instructions for method at @0x{:08x}".format(self.method.get_code_off()))
         for idx, ins in self.method.get_instructions_idx():
             if ins.get_op_value() in BasicOPCODES:
                 v = dex.determineNext(ins, idx, self.method)
                 h[idx] = v
                 l.extend(v)
 
-        ###logger.debug("Parsing exceptions")
+        logger.debug("Parsing exceptions")
         excepts = dex.determineException(self.__vm, self.method)
         for i in excepts:
             l.extend([i[0]])
             for handler in i[2:]:
                 l.append(handler[1])
 
-        ###logger.debug("Creating basic blocks")
+        logger.debug("Creating basic blocks")
         for idx, ins in self.method.get_instructions_idx():
             # index is a destination
             if idx in l:
@@ -455,14 +455,14 @@ class MethodAnalysis:
         if current_basic.get_nb_instructions() == 0:
             self.basic_blocks.pop(-1)
 
-        ###logger.debug("Settings basic blocks childs")
+        logger.debug("Settings basic blocks childs")
         for i in self.basic_blocks.get():
             try:
                 i.set_childs(h[i.end - i.get_last_length()])
             except KeyError:
                 i.set_childs([])
 
-        ###logger.debug("Creating exceptions")
+        logger.debug("Creating exceptions")
         self.exceptions.add(excepts, self.basic_blocks)
 
         for i in self.basic_blocks.get():
@@ -1432,7 +1432,7 @@ class Analysis:
         """
         self.vms.append(vm)
 
-        ###logger.info("Adding DEX file version {}".format(vm.version))
+        logger.info("Adding DEX file version {}".format(vm.version))
 
         # TODO: This step can easily be multithreaded, as there is no dependecy between the objects at this stage
         tic = time.time()
@@ -1455,7 +1455,7 @@ class Analysis:
                 m_hash = (current_class.get_name(), method.get_name(), str(method.get_descriptor()))
                 self.__method_hashes[m_hash] = self.methods[method]
 
-        ###logger.info("Added DEX in the analysis took : {:0d}min {:02d}s".format(*divmod(int(time.time() - tic), 60)))
+        logger.info("Added DEX in the analysis took : {:0d}min {:02d}s".format(*divmod(int(time.time() - tic), 60)))
 
     def create_xref(self):
         """
@@ -1470,13 +1470,13 @@ class Analysis:
         if self.__created_xrefs:
             # TODO on concurrent runs, we probably need to clean up first,
             # or check that we do not write garbage.
-            ###logger.error("You have requested to run create_xref() twice! "
+            logger.error("You have requested to run create_xref() twice! "
                       "This will not work and cause problems! This function will exit right now. "
                       "If you want to add multiple DEX files, use add() several times and then run create_xref() once.")
             return
 
         self.__created_xrefs = True
-        ###logger.debug("Creating Crossreferences (XREF)")
+        logger.debug("Creating Crossreferences (XREF)")
         tic = time.time()
 
         # TODO multiprocessing
@@ -1489,7 +1489,7 @@ class Analysis:
         # TODO: After we collected all the information, we should add field and
         # string xrefs to each MethodAnalysis
 
-        ###logger.info("End of creating cross references (XREF) "
+        logger.info("End of creating cross references (XREF) "
                  "run time: {:0d}min {:02d}s".format(*divmod(int(time.time() - tic), 60)))
 
     def _create_xref(self, current_class):
@@ -1510,9 +1510,9 @@ class Analysis:
         """
         cur_cls_name = current_class.get_name()
 
-        ###logger.debug("Creating XREF/DREF for class at @0x{:08x}".format(current_class.get_class_data_off()))
+        logger.debug("Creating XREF/DREF for class at @0x{:08x}".format(current_class.get_class_data_off()))
         for current_method in current_class.get_methods():
-            ###logger.debug("Creating XREF for method at @0x{:08x}".format(current_method.get_code_off()))
+            logger.debug("Creating XREF for method at @0x{:08x}".format(current_method.get_code_off()))
 
             cur_meth = self.get_method(current_method)
             cur_cls = self.classes[cur_cls_name]
@@ -1560,7 +1560,7 @@ class Analysis:
                     idx_meth = instruction.get_ref_kind()
                     method_info = instruction.cm.vm.get_cm_method(idx_meth)
                     if not method_info:
-                        ###logger.warning("Could not get method_info "
+                        logger.warning("Could not get method_info "
                                     "for instruction at {} in method at @{}. "
                                     "Requested IDX {}".format(off, current_method.get_code_off(), idx_meth))
                         continue
@@ -1894,7 +1894,7 @@ class Analysis:
         for cls in self.get_classes():
             name = "CLASS_" + bytecode.FormatClassToPython(cls.name)
             if hasattr(self, name):
-                ###logger.warning("Already existing class {}!".format(name))
+                logger.warning("Already existing class {}!".format(name))
             setattr(self, name, cls)
 
             for meth in cls.get_methods():
@@ -1905,7 +1905,7 @@ class Analysis:
                 # FIXME this naming schema is not very good... but to describe a method uniquely, we need all of it
                 mname = "METH_" + method_name + "_" + bytecode.FormatDescriptorToPython(meth.access) + "_" + bytecode.FormatDescriptorToPython(meth.descriptor)
                 if hasattr(cls, mname):
-                    ###logger.warning("already existing method: {} at class {}".format(mname, name))
+                    logger.warning("already existing method: {} at class {}".format(mname, name))
                 setattr(cls, mname, meth)
 
             # FIXME: syntetic classes produce problems here.
@@ -1913,7 +1913,7 @@ class Analysis:
             for field in cls.get_fields():
                 mname = "FIELD_" + bytecode.FormatNameToPython(field.name)
                 if hasattr(cls, mname):
-                    ###logger.warning("already existing field: {} at class {}".format(mname, name))
+                    logger.warning("already existing field: {} at class {}".format(mname, name))
                 setattr(cls, mname, field)
 
     def get_permissions(self, apilevel=None):

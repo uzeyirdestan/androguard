@@ -119,7 +119,7 @@ def mark_loop_rec(graph, node, s_num, e_num, interval, nodes_in_loop):
 
 
 def mark_loop(graph, start, end, interval):
-    ###logger.debug('MARKLOOP : %s END : %s', start, end)
+    logger.debug('MARKLOOP : %s END : %s', start, end)
     head = start.get_head()
     latch = end.get_end()
     nodes_in_loop = [head]
@@ -175,8 +175,8 @@ def loop_follow(start, end, nodes_in_loop):
     start.follow['loop'] = follow
     for node in nodes_in_loop:
         node.follow['loop'] = follow
-    ###logger.debug('Start of loop %s', start)
-    ###logger.debug('Follow of loop: %s', start.follow['loop'])
+    logger.debug('Start of loop %s', start)
+    logger.debug('Follow of loop: %s', start.follow['loop'])
 
 
 def loop_struct(graphs_list, intervals_list):

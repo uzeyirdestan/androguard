@@ -51,7 +51,7 @@ class DexTest(unittest.TestCase):
                                  '7000000070000000785634120000000000000000000000000000000000000000'
                                  '0000000000000000000000000000000000000000000000000000000000000000'
                                  '00000000000000000000000000000000')
-        with self.assertLogs(##logger.'androguard.dvm', level=logging.WARNING) as cnx:
+        with self.assertLogs(logger='androguard.dvm', level=logging.WARNING) as cnx:
             self.assertIsNotNone(dvm.DalvikVMFormat(dex))
         self.assertEqual(cnx.output, ["WARNING:androguard.dvm:no map list! This DEX file is probably empty."])
 
@@ -69,7 +69,7 @@ class DexTest(unittest.TestCase):
                                  '7000000070000000785634120000000000000000000000000000000000000000'
                                  '0000000000000000000000000000000000000000000000000000000000000000'
                                  '00000000000000000000000000000000')
-        with self.assertLogs(##logger.'androguard.dvm', level=logging.WARNING) as cnx:
+        with self.assertLogs(logger='androguard.dvm', level=logging.WARNING) as cnx:
             dvm.DalvikVMFormat(dex)
         self.assertEqual(cnx.output, ["WARNING:androguard.dvm:Wrong DEX version: b'dex\\n\\xff\\x00\\xab\\x00', trying to parse anyways",
                                       "WARNING:androguard.dvm:no map list! This DEX file is probably empty."])
@@ -376,13 +376,13 @@ class InstructionTest(unittest.TestCase):
 
     def testWrongInstructions(self):
         """Test if unknown instructions log an error"""
-        with self.assertLogs(##logger.'androguard.dvm', level=logging.ERROR) as cnx:
+        with self.assertLogs(logger='androguard.dvm', level=logging.ERROR) as cnx:
             ins = list(dvm.LinearSweepAlgorithm.get_instructions(MockClassManager(), 1, bytearray(b"\xff\xab"), 0))
         self.assertEqual(cnx.output, ["ERROR:androguard.dvm:Invalid instruction encountered! "
                                       "Stop parsing bytecode at idx 0. Message: Unknown Instruction '0xabff'"])
         self.assertEqual(len(ins), 0)  # No instruction should be parsed
 
-        with self.assertLogs(##logger.'androguard.dvm', level=logging.ERROR) as cnx:
+        with self.assertLogs(logger='androguard.dvm', level=logging.ERROR) as cnx:
             ins = list(dvm.LinearSweepAlgorithm.get_instructions(MockClassManager(), 2, bytearray(b"\x00\x00"
                                                                                                   b"\xff\xab"), 0))
         self.assertEqual(cnx.output, ["ERROR:androguard.dvm:Invalid instruction encountered! "

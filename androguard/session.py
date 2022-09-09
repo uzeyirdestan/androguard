@@ -55,7 +55,7 @@ class Session:
         self.export_ipython = export_ipython
 
         self.db = dataset.connect('sqlite:///androguard.db')
-        ###logger.info("Opening database {}".format(self.db))
+        logger.info("Opening database {}".format(self.db))
         self.table_information = self.db["information"]
         self.table_session = self.db["session"]
         self.table_pentest = self.db["pentest"]
@@ -64,14 +64,14 @@ class Session:
         self.session_id = len(self.table_session)
 
         self.table_session.insert(dict(id=self.session_id))
-        ###logger.info("Creating new session [{}]".format(self.session_id))
+        logger.info("Creating new session [{}]".format(self.session_id))
 
 
     def save(self, filename=None):
         """
         Save the current session, see also :func:`~androguard.session.Save`.
         """
-        ###logger.info("Saving the database")
+        logger.info("Saving the database")
         self.db.commit()
 
     def _setup_objects(self):
@@ -137,7 +137,7 @@ class Session:
         """
         digest = hashlib.sha256(data).hexdigest()
 
-        ###logger.info("add APK {}:{}".format(filename, digest))
+        logger.info("add APK {}:{}".format(filename, digest))
         self.table_information.insert(dict(session_id=str(self.session_id), filename=filename, digest=digest, type="APK"))
 
 
@@ -157,7 +157,7 @@ class Session:
         # Postponed
         dx.create_xref()
 
-        ###logger.info("added APK {}:{}".format(filename, digest))
+        logger.info("added APK {}:{}".format(filename, digest))
         return digest, newapk
 
     def addDEX(self, filename, data, dx=None, postpone_xref=False):
@@ -171,13 +171,13 @@ class Session:
         :return: A tuple of SHA256 Hash, DalvikVMFormat Object and Analysis object
         """
         digest = hashlib.sha256(data).hexdigest()
-        ###logger.info("add DEX:{}".format(digest))
+        logger.info("add DEX:{}".format(digest))
 
         self.table_information.insert(dict(session_id=str(self.session_id), filename=filename, digest=digest, type="DEX"))
 
-        ###logger.debug("Parsing format ...")
+        logger.debug("Parsing format ...")
         d = dex.DEX(data)
-        ###logger.info("added DEX:{}".format(digest))
+        logger.info("added DEX:{}".format(digest))
 
         self.analyzed_files[filename].append(digest)
         self.analyzed_digest[digest] = filename
@@ -191,7 +191,7 @@ class Session:
         if not postpone_xref:
             dx.create_xref()
 
-        ###logger.debug("Associated decompiler to the DEX objects")
+        logger.debug("Associated decompiler to the DEX objects")
         for d in dx.vms:
             # TODO: allow different decompiler here!
             d.set_decompiler(DecompilerDAD(d, dx))
@@ -199,7 +199,7 @@ class Session:
         self.analyzed_vms[digest] = dx
 
         if self.export_ipython:
-            ###logger.debug("Exporting in ipython")
+            logger.debug("Exporting in ipython")
             d.create_python_export()
 
         return digest, d, dx
@@ -209,12 +209,12 @@ class Session:
         Add an ODEX file to the session and run the analysis
         """
         digest = hashlib.sha256(data).hexdigest()
-        ###logger.info("add ODEX:%s" % digest)
+        logger.info("add ODEX:%s" % digest)
 
         self.table_information.insert(dict(session_id=str(self.session_id), filename=filename, digest=digest, type="ODEX"))
 
         d = dex.ODEX(data)
-        ###logger.debug("added ODEX:%s" % digest)
+        logger.debug("added ODEX:%s" % digest)
 
         self.analyzed_files[filename].append(digest)
         self.analyzed_digest[digest] = filename
@@ -257,12 +257,12 @@ class Session:
         :return: the sha256 of the file or None on failure
         """
         if not raw_data:
-            ###logger.debug("Loading file from '{}'".format(filename))
+            logger.debug("Loading file from '{}'".format(filename))
             with open(filename, "rb") as fp:
                 raw_data = fp.read()
 
         ret = androconf.is_android_raw(raw_data)
-        ###logger.debug("Found filetype: '{}'".format(ret))
+        logger.debug("Found filetype: '{}'".format(ret))
         if not ret:
             return None
 

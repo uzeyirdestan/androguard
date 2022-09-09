@@ -211,7 +211,7 @@ class Writer:
     def visit_loop_node(self, loop):
         follow = loop.follow['loop']
         if follow is None and not loop.looptype.is_endless:
-            ###logger.error('Loop has no follow !')
+            logger.error('Loop has no follow !')
         if loop.looptype.is_pretest:
             if loop.true is follow:
                 loop.neg()
@@ -609,7 +609,7 @@ class Writer:
             elem_id = data_types[elem_size]
         else:
             # FIXME for other types we just assume bytes...
-            ###logger.warning("Unknown element size {} for array. Assume bytes.".format(elem_size))
+            logger.warning("Unknown element size {} for array. Assume bytes.".format(elem_size))
             elem_id = 'b'
             elem_size = 1
 

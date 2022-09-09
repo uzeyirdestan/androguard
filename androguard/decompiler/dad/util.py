@@ -185,7 +185,7 @@ def get_type(atype, size=None):
                 res = '{}[{}]'.format(get_type(atype[1:]), size)
         else:
             res = atype
-            ###logger.debug('Unknown descriptor: "%s".', atype)
+            logger.debug('Unknown descriptor: "%s".', atype)
     return res
 
 

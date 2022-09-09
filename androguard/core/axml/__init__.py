@@ -125,7 +125,7 @@ class StringBlock:
 
         # Check if they supplied a stylesOffset even if the count is 0:
         if self.styleCount == 0 and self.stylesOffset > 0:
-            ###logger.info("Styles Offset given, but styleCount is zero. "
+            logger.info("Styles Offset given, but styleCount is zero. "
                      "This is not a problem but could indicate packers.")
 
         self.m_stringOffsets = []
@@ -152,7 +152,7 @@ class StringBlock:
             size = self.stylesOffset - self.stringsOffset
 
         if (size % 4) != 0:
-            ###logger.warning("Size of strings is not aligned by four bytes.")
+            logger.warning("Size of strings is not aligned by four bytes.")
 
         self.m_charbuff = buff.read(size)
 
@@ -160,7 +160,7 @@ class StringBlock:
             size = self.header.size - self.stylesOffset
 
             if (size % 4) != 0:
-                ###logger.warning("Size of styles is not aligned by four bytes.")
+                logger.warning("Size of styles is not aligned by four bytes.")
 
             for i in range(0, size // 4):
                 self.m_styles.append(unpack('<I', buff.read(4))[0])
@@ -276,7 +276,7 @@ class StringBlock:
         """
         string = data.decode(encoding, 'replace')
         if len(string) != str_len:
-            ###logger.warning("invalid decoded string length")
+            logger.warning("invalid decoded string length")
         return string
 
     def _decode_length(self, offset, sizeof_char):
@@ -368,7 +368,7 @@ class AXMLParser:
     See http://androidxref.com/9.0.0_r3/xref/frameworks/base/libs/androidfw/include/androidfw/ResourceTypes.h#563
     """
     def __init__(self, raw_buff):
-        ###logger.debug("AXMLParser")
+        logger.debug("AXMLParser")
 
         self._reset()
 
@@ -379,22 +379,22 @@ class AXMLParser:
 
         # Minimum is a single ARSCHeader, which would be a strange edge case...
         if self.buff_size < 8:
-            ###logger.error("Filesize is too small to be a valid AXML file! Filesize: {}".format(self.buff.size()))
+            logger.error("Filesize is too small to be a valid AXML file! Filesize: {}".format(self.buff.size()))
             self._valid = False
             return
 
         # This would be even stranger, if an AXML file is larger than 4GB...
         # But this is not possible as the maximum chunk size is a unsigned 4 byte int.
         if self.buff_size > 0xFFFFFFFF:
-            ###logger.error("Filesize is too large to be a valid AXML file! Filesize: {}".format(self.buff.size()))
+            logger.error("Filesize is too large to be a valid AXML file! Filesize: {}".format(self.buff.size()))
             self._valid = False
             return
 
         try:
             axml_header = ARSCHeader(self.buff)
-            ###logger.debug("FIRST HEADER {}".format(axml_header))
+            logger.debug("FIRST HEADER {}".format(axml_header))
         except ResParserError as e:
-            ###logger.error("Error parsing first resource header: %s", e)
+            logger.error("Error parsing first resource header: %s", e)
             self._valid = False
             return
 
@@ -403,43 +403,43 @@ class AXMLParser:
         if axml_header.header_size == 28024:
             # Can be a common error: the file is not an AXML but a plain XML
             # The file will then usually start with '<?xm' / '3C 3F 78 6D'
-            ###logger.warning("Header size is 28024! Are you trying to parse a plain XML file?")
+            logger.warning("Header size is 28024! Are you trying to parse a plain XML file?")
 
         if axml_header.header_size != 8:
-            ###logger.error("This does not look like an AXML file. header size does not equal 8! header size = {}".format(axml_header.header_size))
+            logger.error("This does not look like an AXML file. header size does not equal 8! header size = {}".format(axml_header.header_size))
             self._valid = False
             return
 
         if self.filesize > self.buff_size:
-            ###logger.error("This does not look like an AXML file. Declared filesize does not match real size: {} vs {}".format(self.filesize, self.buff.size()))
+            logger.error("This does not look like an AXML file. Declared filesize does not match real size: {} vs {}".format(self.filesize, self.buff.size()))
             self._valid = False
             return
 
         if self.filesize < self.buff_size:
             # The file can still be parsed up to the point where the chunk should end.
             self.axml_tampered = True
-            ###logger.warning("Declared filesize ({}) is smaller than total file size ({}). "
+            logger.warning("Declared filesize ({}) is smaller than total file size ({}). "
                         "Was something appended to the file? Trying to parse it anyways.".format(self.filesize, self.buff.size()))
 
         # Not that severe of an error, we have plenty files where this is not
         # set correctly
         if axml_header.type != RES_XML_TYPE:
             self.axml_tampered = True
-            ###logger.warning("AXML file has an unusual resource type! "
+            logger.warning("AXML file has an unusual resource type! "
                            "Malware likes to to such stuff to anti androguard! "
                            "But we try to parse it anyways. Resource Type: 0x{:04x}".format(axml_header.type))
 
         # Now we parse the STRING POOL
         try:
             header = ARSCHeader(self.buff, expected_type=RES_STRING_POOL_TYPE)
-            ###logger.debug("STRING_POOL {}".format(header))
+            logger.debug("STRING_POOL {}".format(header))
         except ResParserError as e:
-            ###logger.error("Error parsing resource header of string pool: {}".format(e))
+            logger.error("Error parsing resource header of string pool: {}".format(e))
             self._valid = False
             return
 
         if header.header_size != 0x1C:
-            ###logger.error("This does not look like an AXML file. String chunk header size does not equal 28! header size = {}".format(header.header_size))
+            logger.error("This does not look like an AXML file. String chunk header size does not equal 28! header size = {}".format(header.header_size))
             self._valid = False
             return
 
@@ -457,7 +457,7 @@ class AXMLParser:
         if an error happend somewhere in the process of parsing the file,
         this flag is set to False.
         """
-        ###logger.debug(self._valid)
+        logger.debug(self._valid)
         return self._valid
 
     def _reset(self):
@@ -475,7 +475,7 @@ class AXMLParser:
         return self.m_event
 
     def _do_next(self):
-        ###logger.debug("M_EVENT {}".format(self.m_event))
+        logger.debug("M_EVENT {}".format(self.m_event))
 
         if self.m_event == END_DOCUMENT:
             return
@@ -490,20 +490,20 @@ class AXMLParser:
             # Again, we read an ARSCHeader
             try:
                 h = ARSCHeader(self.buff)
-                ###logger.debug("NEXT HEADER {}".format(h))
+                logger.debug("NEXT HEADER {}".format(h))
             except ResParserError as e:
-                ###logger.error("Error parsing resource header: {}".format(e))
+                logger.error("Error parsing resource header: {}".format(e))
                 self._valid = False
                 return
 
             # Special chunk: Resource Map. This chunk might be contained inside
             # the file, after the string pool.
             if h.type == RES_XML_RESOURCE_MAP_TYPE:
-                ###logger.debug("AXML contains a RESOURCE MAP")
+                logger.debug("AXML contains a RESOURCE MAP")
                 # Check size: < 8 bytes mean that the chunk is not complete
                 # Should be aligned to 4 bytes.
                 if h.size < 8 or (h.size % 4) != 0:
-                    ###logger.error("Invalid chunk size in chunk XML_RESOURCE_MAP")
+                    logger.error("Invalid chunk size in chunk XML_RESOURCE_MAP")
                     self._valid = False
                     return
 
@@ -518,13 +518,13 @@ class AXMLParser:
                 # h.size is the size of the whole chunk including the header.
                 # We read already 8 bytes of the header, thus we need to
                 # subtract them.
-                ###logger.error("Not a XML resource chunk type: 0x{:04x}. Skipping {} bytes".format(h.type, h.size))
+                logger.error("Not a XML resource chunk type: 0x{:04x}. Skipping {} bytes".format(h.type, h.size))
                 self.buff.seek(h.end)
                 continue
 
             # Check that we read a correct header
             if h.header_size != 0x10:
-                ###logger.error("XML Resource Type Chunk header size does not match 16! " \
+                logger.error("XML Resource Type Chunk header size does not match 16! " \
                 "At chunk type 0x{:04x}, declared header size=0x{:04x}, chunk size=0x{:04x}".format(h.type, h.header_size, h.size))
                 self.buff.seek(h.end)
                 continue
@@ -536,7 +536,7 @@ class AXMLParser:
             self.m_comment_index, = unpack('<L', self.buff.read(4))
 
             if self.m_comment_index != 0xFFFFFFFF and h.type in [RES_XML_START_NAMESPACE_TYPE, RES_XML_END_NAMESPACE_TYPE]:
-                ###logger.warning("Unhandled Comment at namespace chunk: '{}'".format(self.sb[self.m_comment_index]))
+                logger.warning("Unhandled Comment at namespace chunk: '{}'".format(self.sb[self.m_comment_index]))
 
             if h.type == RES_XML_START_NAMESPACE_TYPE:
                 prefix, = unpack('<L', self.buff.read(4))
@@ -545,14 +545,14 @@ class AXMLParser:
                 s_prefix = self.sb[prefix]
                 s_uri = self.sb[uri]
 
-                ###logger.debug("Start of Namespace mapping: prefix {}: '{}' --> uri {}: '{}'".format(prefix, s_prefix, uri, s_uri))
+                logger.debug("Start of Namespace mapping: prefix {}: '{}' --> uri {}: '{}'".format(prefix, s_prefix, uri, s_uri))
 
                 if s_uri == '':
-                    ###logger.warning("Namespace prefix '{}' resolves to empty URI. "
+                    logger.warning("Namespace prefix '{}' resolves to empty URI. "
                                 "This might be a packer.".format(s_prefix))
 
                 if (prefix, uri) in self.namespaces:
-                    ###logger.info("Namespace mapping ({}, {}) already seen! "
+                    logger.info("Namespace mapping ({}, {}) already seen! "
                              "This is usually not a problem but could indicate packers or broken AXML compilers.".format(prefix, uri))
                 self.namespaces.append((prefix, uri))
 
@@ -569,7 +569,7 @@ class AXMLParser:
                 if (prefix, uri) in self.namespaces:
                     self.namespaces.remove((prefix, uri))
                 else:
-                    ###logger.warning("Reached a NAMESPACE_END without having the namespace stored before? "
+                    logger.warning("Reached a NAMESPACE_END without having the namespace stored before? "
                                 "Prefix ID: {}, URI ID: {}".format(prefix, uri))
 
                 # We can continue with the next chunk, as we store the namespace
@@ -646,7 +646,7 @@ class AXMLParser:
                 # For now, we ingore these values
                 size, res0, dataType, data = unpack("<HBBL", self.buff.read(8))
 
-                ###logger.debug("found a CDATA Chunk: "
+                logger.debug("found a CDATA Chunk: "
                           "index={: 6d}, size={: 4d}, res0={: 4d}, dataType={: 4d}, data={: 4d}".format(self.m_name,
                                                                                                         size,
                                                                                                         res0,
@@ -657,7 +657,7 @@ class AXMLParser:
                 break
 
             # Still here? Looks like we read an unknown XML header, try to skip it...
-            ###logger.warning("Unknown XML Chunk: 0x{:04x}, skipping {} bytes.".format(h.type, h.size))
+            logger.warning("Unknown XML Chunk: 0x{:04x}, skipping {} bytes.".format(h.type, h.size))
             self.buff.seek(h.end)
 
     @property
@@ -759,11 +759,11 @@ class AXMLParser:
         Return the start inside the m_attributes array for a given attribute
         """
         if self.m_event != START_TAG:
-            ###logger.warning("Current event is not START_TAG.")
+            logger.warning("Current event is not START_TAG.")
 
         offset = index * ATTRIBUTE_LENGHT
         if offset >= len(self.m_attributes):
-            ###logger.warning("Invalid attribute index")
+            logger.warning("Invalid attribute index")
 
         return offset
 
@@ -781,7 +781,7 @@ class AXMLParser:
         """
         Returns the numeric ID for the namespace URI of an attribute
         """
-        ###logger.debug(index)
+        logger.debug(index)
 
         offset = self._get_attribute_offset(index)
         uri = self.m_attributes[offset + ATTRIBUTE_IX_NAMESPACE_URI]
@@ -792,7 +792,7 @@ class AXMLParser:
         """
         Return the Namespace URI (if any) for the attribute
         """
-        ###logger.debug(index)
+        logger.debug(index)
 
         uri = self.getAttributeUri(index)
 
@@ -806,7 +806,7 @@ class AXMLParser:
         """
         Returns the String which represents the attribute name
         """
-        ###logger.debug(index)
+        logger.debug(index)
         offset = self._get_attribute_offset(index)
         name = self.m_attributes[offset + ATTRIBUTE_IX_NAME]
 
@@ -829,7 +829,7 @@ class AXMLParser:
 
         :param index: index of the attribute
         """
-        ###logger.debug(index)
+        logger.debug(index)
 
         offset = self._get_attribute_offset(index)
         return self.m_attributes[offset + ATTRIBUTE_IX_VALUE_TYPE]
@@ -840,7 +840,7 @@ class AXMLParser:
 
         :param index: index of the attribute
         """
-        ###logger.debug(index)
+        logger.debug(index)
 
         offset = self._get_attribute_offset(index)
         return self.m_attributes[offset + ATTRIBUTE_IX_VALUE_DATA]
@@ -854,7 +854,7 @@ class AXMLParser:
         :param index: index of the attribute
         :return:
         """
-        ###logger.debug(index)
+        logger.debug(index)
 
         offset = self._get_attribute_offset(index)
         valueType = self.m_attributes[offset + ATTRIBUTE_IX_VALUE_TYPE]
@@ -929,7 +929,7 @@ class AXMLPrinter:
     __replacement = None
 
     def __init__(self, raw_buff):
-        ###logger.debug("AXMLPrinter")
+        logger.debug("AXMLPrinter")
 
         self.axml = AXMLParser(raw_buff)
 
@@ -939,7 +939,7 @@ class AXMLPrinter:
 
         while self.axml.is_valid():
             _type = next(self.axml)
-            ###logger.debug("DEBUG ARSC TYPE {}".format(_type))
+            logger.debug("DEBUG ARSC TYPE {}".format(_type))
 
             if _type == START_TAG:
                 uri = self._print_namespace(self.axml.namespace)
@@ -949,11 +949,11 @@ class AXMLPrinter:
                 comment = self.axml.comment
                 if comment:
                     if self.root is None:
-                        ###logger.warning("Can not attach comment with content '{}' without root!".format(comment))
+                        logger.warning("Can not attach comment with content '{}' without root!".format(comment))
                     else:
                         cur[-1].append(etree.Comment(comment))
 
-                ###logger.debug("START_TAG: {} (line={})".format(tag, self.axml.m_lineNumber))
+                logger.debug("START_TAG: {} (line={})".format(tag, self.axml.m_lineNumber))
                 elem = etree.Element(tag, nsmap=self.axml.nsmap)
 
                 for i in range(self.axml.getAttributeCount()):
@@ -961,9 +961,9 @@ class AXMLPrinter:
                     uri, name = self._fix_name(uri, self.axml.getAttributeName(i))
                     value = self._fix_value(self._get_attribute_value(i))
 
-                    ###logger.debug("found an attribute: {}{}='{}'".format(uri, name, value.encode("utf-8")))
+                    logger.debug("found an attribute: {}{}='{}'".format(uri, name, value.encode("utf-8")))
                     if "{}{}".format(uri, name) in elem.attrib:
-                        ###logger.warning("Duplicate attribute '{}{}'! Will overwrite!".format(uri, name))
+                        logger.warning("Duplicate attribute '{}{}'! Will overwrite!".format(uri, name))
                     elem.set("{}{}".format(uri, name), value)
 
                 if self.root is None:
@@ -971,28 +971,28 @@ class AXMLPrinter:
                 else:
                     if not cur:
                         # looks like we lost the root?
-                        ###logger.error("No more elements available to attach to! Is the XML malformed?")
+                        logger.error("No more elements available to attach to! Is the XML malformed?")
                         break
                     cur[-1].append(elem)
                 cur.append(elem)
 
             if _type == END_TAG:
                 if not cur:
-                    ###logger.warning("Too many END_TAG! No more elements available to attach to!")
+                    logger.warning("Too many END_TAG! No more elements available to attach to!")
 
                 name = self.axml.name
                 uri = self._print_namespace(self.axml.namespace)
                 tag = "{}{}".format(uri, name)
                 if cur[-1].tag != tag:
-                    ###logger.warning("Closing tag '{}' does not match current stack! At line number: {}. Is the XML malformed?".format(self.axml.name, self.axml.m_lineNumber))
+                    logger.warning("Closing tag '{}' does not match current stack! At line number: {}. Is the XML malformed?".format(self.axml.name, self.axml.m_lineNumber))
                 cur.pop()
             if _type == TEXT:
-                ###logger.debug("TEXT for {}".format(cur[-1]))
+                logger.debug("TEXT for {}".format(cur[-1]))
                 cur[-1].text = self.axml.text
             if _type == END_DOCUMENT:
                 # Check if all namespace mappings are closed
                 if len(self.axml.namespaces) > 0:
-                    ###logger.warning("Not all namespace mappings were closed! Malformed AXML?")
+                    logger.warning("Not all namespace mappings were closed! Malformed AXML?")
                 break
 
     def get_buff(self):
@@ -1075,13 +1075,13 @@ class AXMLPrinter:
         :rtype: tuple
         """
         if not name[0].isalpha() and name[0] != "_":
-            ###logger.warning("Invalid start for name '{}'. "
+            logger.warning("Invalid start for name '{}'. "
                         "XML name must start with a letter.".format(name))
             self.packerwarning = True
             name = "_{}".format(name)
         if name.startswith("android:") and prefix == '' and 'android' in self.axml.nsmap:
             # Seems be a common thing...
-            ###logger.info("Name '{}' starts with 'android:' prefix but 'android' is a known prefix. Replacing prefix.".format(name))
+            logger.info("Name '{}' starts with 'android:' prefix but 'android' is a known prefix. Replacing prefix.".format(name))
             prefix = self._print_namespace(self.axml.nsmap['android'])
             name = name[len("android:"):]
             # It looks like this is some kind of packer... Not sure though.
@@ -1090,15 +1090,15 @@ class AXMLPrinter:
             self.packerwarning = True
             embedded_prefix, new_name = name.split(":", 1)
             if embedded_prefix in self.axml.nsmap:
-                ###logger.info("Prefix '{}' is in namespace mapping, assume that it is a prefix.")
+                logger.info("Prefix '{}' is in namespace mapping, assume that it is a prefix.")
                 prefix = self._print_namespace(self.axml.nsmap[embedded_prefix])
                 name = new_name
             else:
                 # Print out an extra warning
-                ###logger.warning("Confused: name contains a unknown namespace prefix: '{}'. "
+                logger.warning("Confused: name contains a unknown namespace prefix: '{}'. "
                             "This is either a broken AXML file or some attempt to break stuff.".format(name))
         if not re.match(r"^[a-zA-Z0-9._-]*$", name):
-            ###logger.warning("Name '{}' contains invalid characters!".format(name))
+            logger.warning("Name '{}' contains invalid characters!".format(name))
             self.packerwarning = True
             name = re.sub(r"[^a-zA-Z0-9._-]", "_", name)
 
@@ -1122,14 +1122,14 @@ class AXMLPrinter:
         # Reading string until \x00. This is the same as aapt does.
         if "\x00" in value:
             self.packerwarning = True
-            ###logger.warning("Null byte found in attribute value at position {}: "
+            logger.warning("Null byte found in attribute value at position {}: "
                         "Value(hex): '{}'".format(
                 value.find("\x00"),
                 binascii.hexlify(value.encode("utf-8"))))
             value = value[:value.find("\x00")]
 
         if not self.__charrange.match(value):
-            ###logger.warning("Invalid character in value found. Replacing with '_'.")
+            logger.warning("Invalid character in value found. Replacing with '_'.")
             self.packerwarning = True
             value = self.__replacement.sub('_', value)
         return value
@@ -1247,22 +1247,22 @@ class ARSCParser:
 
         # More sanity checks...
         if self.header.header_size != 12:
-            ###logger.warning("The ResTable_header has an unexpected header size! Expected 12 bytes, got {}.".format(self.header.header_size))
+            logger.warning("The ResTable_header has an unexpected header size! Expected 12 bytes, got {}.".format(self.header.header_size))
 
         if self.header.size > self.buff_size:
             raise ResParserError("The file seems to be truncated. Refuse to parse the file! Filesize: {}, declared size: {}".format(self.buff_size, self.header.size))
 
         if self.header.size < self.buff_size:
-            ###logger.warning("The Resource file seems to have data appended to it. Filesize: {}, declared size: {}".format(self.buff_size, self.header.size))
+            logger.warning("The Resource file seems to have data appended to it. Filesize: {}, declared size: {}".format(self.buff_size, self.header.size))
 
         # The ResTable_header contains the packageCount, i.e. the number of ResTable_package
         self.packageCount = unpack('<I', self.buff.read(4))[0]
 
         # Even more sanity checks...
         if self.packageCount < 1:
-            ###logger.warning("The number of packages is smaller than one. There should be at least one package!")
+            logger.warning("The number of packages is smaller than one. There should be at least one package!")
 
-        ###logger.debug("Parsed ResTable_header with {} package(s) inside.".format(self.packageCount))
+        logger.debug("Parsed ResTable_header with {} package(s) inside.".format(self.packageCount))
 
         # skip to the start of the first chunk's data, skipping trailing header bytes (there should be none)
         self.buff.seek(self.header.start + self.header.header_size)
@@ -1274,16 +1274,16 @@ class ARSCParser:
 
             if res_header.end > self.header.end:
                 # this inner chunk crosses the boundary of the table chunk
-                ###logger.warning("Invalid chunk found! It is larger than the outer chunk: %s", res_header)
+                logger.warning("Invalid chunk found! It is larger than the outer chunk: %s", res_header)
                 break
 
             if res_header.type == RES_STRING_POOL_TYPE:
                 # There should be only one StringPool per resource table.
                 if self.stringpool_main:
-                    ###logger.warning("Already found a ResStringPool_header, but there should be only one! Will not parse the Pool again.")
+                    logger.warning("Already found a ResStringPool_header, but there should be only one! Will not parse the Pool again.")
                 else:
                     self.stringpool_main = StringBlock(self.buff, res_header)
-                    ###logger.debug("Found the main string pool: %s", self.stringpool_main)
+                    logger.debug("Found the main string pool: %s", self.stringpool_main)
 
             elif res_header.type == RES_TABLE_PACKAGE_TYPE:
                 if len(self.packages) > self.packageCount:
@@ -1308,7 +1308,7 @@ class ARSCParser:
                 self.packages[package_name].append(mKeyStrings)
 
                 pc = PackageContext(current_package, self.stringpool_main, mTableStrings, mKeyStrings)
-                ###logger.debug("Constructed a PackageContext: %s", pc)
+                logger.debug("Constructed a PackageContext: %s", pc)
 
                 # skip to the first header in this table package chunk
                 # FIXME is this correct? We have already read the first two sections!
@@ -1320,18 +1320,18 @@ class ARSCParser:
 
                 if next_idx != self.buff.tell():
                     # If this happens, we have a testfile ;)
-                    ###logger.error("This looks like an odd resources.arsc file!")
-                    ###logger.error("Please report this error including the file you have parsed!")
-                    ###logger.error("next_idx = {}, current buffer position = {}".format(next_idx, self.buff.tell()))
-                    ###logger.error("Please open a issue at https://github.com/androguard/androguard/issues")
-                    ###logger.error("Thank you!")
+                    logger.error("This looks like an odd resources.arsc file!")
+                    logger.error("Please report this error including the file you have parsed!")
+                    logger.error("next_idx = {}, current buffer position = {}".format(next_idx, self.buff.tell()))
+                    logger.error("Please open a issue at https://github.com/androguard/androguard/issues")
+                    logger.error("Thank you!")
 
                 self.buff.seek(next_idx)
 
                 # Read all other headers
                 while self.buff.tell() <= res_header.end - ARSCHeader.SIZE:
                     pkg_chunk_header = ARSCHeader(self.buff)
-                    ###logger.debug("Found a header: {}".format(pkg_chunk_header))
+                    logger.debug("Found a header: {}".format(pkg_chunk_header))
                     if pkg_chunk_header.start + pkg_chunk_header.size > res_header.end:
                         # we are way off the package chunk; bail out
                         break
@@ -1348,7 +1348,7 @@ class ARSCParser:
                         self.packages[package_name].append(a_res_type)
                         self.resource_configs[package_name][a_res_type].add(a_res_type.config)
 
-                        ###logger.debug("Config: {}".format(a_res_type.config))
+                        logger.debug("Config: {}".format(a_res_type.config))
 
                         entries = []
                         for i in range(0, a_res_type.entryCount):
@@ -1371,16 +1371,16 @@ class ARSCParser:
                                     # Not sure if this is a good solution though
                                     self.buff.seek(ate.start)
                     elif pkg_chunk_header.type == RES_TABLE_LIBRARY_TYPE:
-                        ###logger.warning("RES_TABLE_LIBRARY_TYPE chunk is not supported")
+                        logger.warning("RES_TABLE_LIBRARY_TYPE chunk is not supported")
                     else:
                         # Unknown / not-handled chunk type
-                        ###logger.warning("Unknown chunk type encountered inside RES_TABLE_PACKAGE: %s", pkg_chunk_header)
+                        logger.warning("Unknown chunk type encountered inside RES_TABLE_PACKAGE: %s", pkg_chunk_header)
 
                     # skip to the next chunk
                     self.buff.seek(pkg_chunk_header.end)
             else:
                 # Unknown / not-handled chunk type
-                ###logger.warning("Unknown chunk type encountered: %s", res_header)
+                logger.warning("Unknown chunk type encountered: %s", res_header)
 
             # move to the next resource chunk
             self.buff.seek(res_header.end)
@@ -1493,7 +1493,7 @@ class ARSCParser:
                     DIMENSION_UNITS[ate.key.get_data() & COMPLEX_UNIT_MASK])
             ]
         except IndexError:
-            ###logger.debug("Out of range dimension unit index for {}: {}".format(
+            logger.debug("Out of range dimension unit index for {}: {}".format(
                 complexToFloat(ate.key.get_data()),
                 ate.key.get_data() & COMPLEX_UNIT_MASK))
             return [ate.get_value(), ate.key.get_data()]
@@ -1831,7 +1831,7 @@ class ARSCParser:
                     # Infinite loop detection:
                     # TODO should this stay here or should be detect the loop much earlier?
                     if res_id == parent.mResId:
-                        ###logger.warning("Infinite loop detected at resource item {}. It references itself!".format(parent))
+                        logger.warning("Infinite loop detected at resource item {}. It references itself!".format(parent))
                         return
 
                     self._resolve_into_result(result, item.get_data(), self.wanted_config)
@@ -1920,7 +1920,7 @@ class ARSCParser:
             raise ValueError("'rid' must be an int")
 
         if rid not in self.resource_values:
-            ###logger.warning("The requested rid '0x{:08x}' could not be found in the list of resources.".format(rid))
+            logger.warning("The requested rid '0x{:08x}' could not be found in the list of resources.".format(rid))
             return []
 
         res_options = self.resource_values[rid]
@@ -1928,7 +1928,7 @@ class ARSCParser:
             if config in res_options:
                 return [(config, res_options[config])]
             elif fallback and config == ARSCResTableConfig.default_config():
-                ###logger.warning("No default resource config could be found for the given rid '0x{:08x}', using fallback!".format(rid))
+                logger.warning("No default resource config could be found for the given rid '0x{:08x}', using fallback!".format(rid))
                 return [list(self.resource_values[rid].items())[0]]
             else:
                 return []
@@ -2227,7 +2227,7 @@ class ARSCResType:
 
         self.config = ARSCResTableConfig(buff)
 
-        ###logger.debug("Parsed {}".format(self))
+        logger.debug("Parsed {}".format(self))
 
     def get_type(self):
         return self.parent.mTableStrings.getString(self.id - 1)
@@ -2309,7 +2309,7 @@ class ARSCResTableConfig:
                 # uint16_t smallestScreenWidthDp
                 self.screenConfig, = unpack('<I', buff.read(4))
             else:
-                ###logger.debug("This file does not have a screenConfig! size={}".format(self.size))
+                logger.debug("This file does not have a screenConfig! size={}".format(self.size))
                 self.screenConfig = 0
 
             if self.size >= 36:
@@ -2318,7 +2318,7 @@ class ARSCResTableConfig:
                 # uint16_t screenHeightDp
                 self.screenSizeDp, = unpack('<I', buff.read(4))
             else:
-                ###logger.debug("This file does not have a screenSizeDp! size={}".format(self.size))
+                logger.debug("This file does not have a screenSizeDp! size={}".format(self.size))
                 self.screenSizeDp = 0
 
             if self.size >= 40:
@@ -2328,12 +2328,12 @@ class ARSCResTableConfig:
                 # uint16_t screenConfigPad2
                 self.screenConfig2, = unpack("<I", buff.read(4))
             else:
-                ###logger.debug("This file does not have a screenConfig2! size={}".format(self.size))
+                logger.debug("This file does not have a screenConfig2! size={}".format(self.size))
                 self.screenConfig2 = 0
 
             self.exceedingSize = self.size - (buff.tell() - self.start)
             if self.exceedingSize > 0:
-                ###logger.debug("Skipping padding bytes!")
+                logger.debug("Skipping padding bytes!")
                 self.padding = buff.read(self.exceedingSize)
 
         else:
@@ -2608,7 +2608,7 @@ class ARSCResTableEntry:
             self.key = ARSCResStringPoolRef(buff, self.parent)
 
         if self.is_weak():
-            ###logger.debug("Parsed {}".format(self))
+            logger.debug("Parsed {}".format(self))
 
     def get_index(self):
         return self.index
